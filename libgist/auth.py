@@ -95,7 +95,8 @@ def get_authorization(username, password, _id=None, _otp=None, _url=None):
 
 def delete_authorization(username, password, _id=None, _otp=None, _url=None):
     '''
-    Update an authorization (to generate a new access token).
+    Delete all the authorizations created using libgist (note: gist-shell).
+    Delete a specific authorization if the '_id' argument is passed.
     '''
     url = 'https://api.github.com/authorizations'
     headers = headers = {
