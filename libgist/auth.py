@@ -93,11 +93,10 @@ def get_authorization(username, password, _id=None, _otp=None, _url=None):
     return authorizations
 
 
-def delete_authorization(username, password, _id, _otp=None, _url=None):
+def delete_authorization(username, password, _id=None, _otp=None, _url=None):
     '''
     Update an authorization (to generate a new access token).
     '''
-    authorizations = []
     url = 'https://api.github.com/authorizations'
     headers = headers = {
         'Accept': 'application/vnd.github.damage-preview+json'
@@ -111,16 +110,15 @@ def delete_authorization(username, password, _id, _otp=None, _url=None):
 
     if _id is not None:
         url = '/'.join([url, _id])
+    else:
         authorizations = get_authorization(username, password)
 
     if len(authorizations) > 0:
         responses = list()
         for auth in authorizations:
-            url = '/'.join([url, auth['id']])
-            response = requests.delete(url, headers=headers,
+            auth_url = '/'.join([url, str(auth['id'])])
+            response = requests.delete(auth_url, headers=headers,
                                        auth=(username, password))
-            responses.append(response.json())
     else:
         response = requests.delete(url, headers=headers,
                                    auth=(username, password))
-        return response.json()
