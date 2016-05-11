@@ -7,7 +7,7 @@ Common arguments:
     # username: GitHub username.
     # password: GitHub password.
     # _otp: One Time Password (X- GitHub-OTP) if 2fa
-      (two factor authentication) is enabled.
+            (two factor authentication) is enabled.
     # _url: Custom API endpoint.
 '''
 
@@ -115,11 +115,9 @@ def delete_authorization(username, password, _id=None, _otp=None, _url=None):
         authorizations = get_authorization(username, password)
 
     if len(authorizations) > 0:
-        responses = list()
         for auth in authorizations:
             auth_url = '/'.join([url, str(auth['id'])])
-            response = requests.delete(auth_url, headers=headers,
-                                       auth=(username, password))
+            requests.delete(auth_url, headers=headers,
+                            auth=(username, password))
     else:
-        response = requests.delete(url, headers=headers,
-                                   auth=(username, password))
+        requests.delete(url, headers=headers, auth=(username, password))
