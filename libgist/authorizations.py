@@ -20,7 +20,7 @@ def generate_fingerprint():
     '''
     details = '; '.join([getuser(), getfqdn()])
     timestamp = str(int(time()))
-    hashed = sha1('-'.join([details, timestamp])).hexdigest()
+    hashed = sha1('--'.join([details, timestamp])).hexdigest()
     fingerprint = '; '.join([hashed, details, timestamp])
 
     return fingerprint
