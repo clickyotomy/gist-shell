@@ -2,7 +2,7 @@
 
 '''
 Authentication modules for GitHub OAuth2 (not the web flow).
-Perform CRUD operations on access tokens; authenticate users.
+Create, fetch, delete authorizations; authenticate users.
 '''
 
 import json
