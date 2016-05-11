@@ -78,7 +78,7 @@ def create_authorization(auth, otp=None, api=None):
 def get_authorization(auth, auth_ids=None, otp=None, api=None):
     '''
     Get all the authorizations created using libgist (note: gist-shell).
-    Lists a specific authorization if the '_id' argument is passed.
+    List specific authorization(s) if the 'auth_ids' argument is passed.
     '''
     authorizations = list()
     if auth_ids is None or len(auth_ids) <= 0:
@@ -105,7 +105,7 @@ def get_authorization(auth, auth_ids=None, otp=None, api=None):
 def delete_authorization(auth, auth_ids=None, otp=None, api=None):
     '''
     Delete all the authorizations created using libgist (note: gist-shell).
-    Delete a specific authorization if the '_id' argument is passed.
+    Delete specific authorization(s) if the 'auth_ids' argument is passed.
     '''
     authorizations = get_authorization(auth=auth, auth_ids=auth_ids, otp=otp,
                                        api=api)
