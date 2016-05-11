@@ -6,4 +6,4 @@ auth: Handle authorization and authentication stuff.
 gist: CRUD Gists on GitHub.
 '''
 
-__all__ = ['auth', 'gist']
+__all__ = ['authorizations', 'gists']
