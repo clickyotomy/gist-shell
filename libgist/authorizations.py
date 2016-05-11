@@ -3,12 +3,6 @@
 '''
 Authentication modules for GitHub OAuth2 (not the web flow).
 Perform CRUD operations on access tokens; authenticate users.
-Common arguments:
-    # username: GitHub username.
-    # password: GitHub password.
-    # _otp: One Time Password (X- GitHub-OTP) if 2fa
-            (two factor authentication) is enabled.
-    # _url: Custom API endpoint.
 '''
 
 import json
