@@ -43,7 +43,7 @@ def check_page_limit(response):
             return int(limit.groups()[0]) if limit is not None else limit
 
 
-def list_gists(user=None, token=None, **kwargs):
+def list_gists(token=None, user=None, **kwargs):
     '''
     List gists. If 'user' is specified, lists public gists for that user.
     If authenticated (by passing the access token), it returns the public
@@ -52,6 +52,7 @@ def list_gists(user=None, token=None, **kwargs):
     page_limit: Fetch results upto this page.
     since: Timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
     starred: Return starred gists of the authenticated user.
+             An empty list will both username and token is passed.
     '''
     pages = []
     api = kwargs['api'] if 'api' in kwargs else None
@@ -81,7 +82,10 @@ def list_gists(user=None, token=None, **kwargs):
         url = '/'.join([url, 'users', user, 'gists'])
 
     if starred:
-        url = '/'.join([url, 'starred'])
+        if token is not None and user is None:
+            url = '/'.join([url, 'starred'])
+        else:
+            return []
 
     current = 1
     check_flag = False
@@ -105,3 +109,20 @@ def list_gists(user=None, token=None, **kwargs):
         current += 1
 
     return pages
+
+
+def get_gist(token, gist_id, revison=None, api=None):
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
+    if token is not None:
+        GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+
+    if gist_id is None:
+        return {}
+
+    url = '/'.join([url, 'gists', str(gist_id)])
+
+    if revison is not None:
+        url = '/'.join([url, revison])
+
+    response = requests.get(url, headers=GIST_HEADER)
+    return response.json()

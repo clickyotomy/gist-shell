@@ -39,15 +39,15 @@ def github_auth_request(http, uri, auth=(), **kwargs):
     otp = kwargs['otp']
     api = kwargs['api']
     payload = kwargs['payload']
-    url = 'https://api.github.com/authorizations'
+    api_url = 'https://api.github.com/authorizations'
     headers = {
         'Accept': 'application/vnd.github.damage-preview+json'
     }
+
+    url = api_url if api is not None else api
+
     if otp is not None:
         headers.update({'X-GitHub-OTP': otp})
-
-    if api is not None:
-        url = '/'.join([api, 'authorizations'])
 
     if uri is not None:
         url = '/'.join([url, uri])
