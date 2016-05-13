@@ -2,6 +2,9 @@
 
 '''
 Perform CRUD operations on GitHub Gists.
+Common arguments to all fucnctions:
+    1. token: The access token for the API.
+    2. api: API URL for the endpoint, other than GitHub.
 '''
 
 import re
@@ -11,7 +14,8 @@ import requests
 # For testing only.
 VAULT = json.loads(open('vault/login.json', 'r').read())
 LOGIN = (VAULT['username'], VAULT['password'])
-TOKEN = VAULT['token']
+GH_TOKEN = VAULT['gh_token']
+GHE_TOKEN = VAULT['ghe_token']
 
 # Default API URL.
 GITHUB_API_URL = 'https://api.github.com'
@@ -44,14 +48,19 @@ def list_gists(user=None, token=None, **kwargs):
     List gists. If 'user' is specified, lists public gists for that user.
     If authenticated (by passing the access token), it returns the public
     gists of that user.
+    per_page: Number of results per page.
+    page_limit: Fetch results upto this page.
+    since: Timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
+    starred: Return starred gists of the authenticated user.
     '''
     pages = []
     api = kwargs['api'] if 'api' in kwargs else None
     since = kwargs['since'] if 'since' in kwargs else None
+    starred = kwargs['starred'] if 'starred' in kwargs else False
     per_page = kwargs['per_page'] if 'per_page' in kwargs else 100
     page_limit = kwargs['page_limit'] if 'page_limit' in kwargs else 2
 
-    url = GITHUB_API_URL if api is None else api
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
     params = {
         'per_page': per_page,
     }
@@ -59,12 +68,20 @@ def list_gists(user=None, token=None, **kwargs):
     if since is not None:
         params.update({'since': since})
 
+    if token is not None:
+        GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+
     if user is None:
-        url = '/'.join([url, 'gists'])
-        if token is not None:
-            GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+        if token is None:
+            url = '/'.join([url, 'gists', 'public'])
+        else:
+            url = '/'.join([url, 'gists'])
+
     else:
         url = '/'.join([url, 'users', user, 'gists'])
+
+    if starred:
+        url = '/'.join([url, 'starred'])
 
     current = 1
     check_flag = False
@@ -74,10 +91,16 @@ def list_gists(user=None, token=None, **kwargs):
         response = requests.get(url, headers=GIST_HEADER, params=params)
         if response.status_code == 200:
             pages.extend(response.json())
+        else:
+            return []
+
         if check_flag is False:
             limit = check_page_limit(response)
-            if limit is not None and page_limit > limit:
-                page_limit = limit
+            if limit is not None:
+                if page_limit > limit:
+                    page_limit = limit
+            else:
+                page_limit = 2
             check_flag = True
         current += 1
 
