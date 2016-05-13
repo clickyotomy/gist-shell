@@ -136,7 +136,7 @@ def get_gist(token, gist_id, revison=None, api=None):
 def post_gist(token, files, description=None, public=False, api=None):
     '''
     Post a Gist.
-    'files' should be a dictionary object.
+    'files' should be a dictionary object, in the following format.
     files = {
         'filename': {
             'content': 'foo'
@@ -154,6 +154,37 @@ def post_gist(token, files, description=None, public=False, api=None):
         'public': public,
         'files': files
     })
-
+    url = '/'.join([url, 'gists'])
     response = requests.post(url, data=payload, headers=GIST_HEADER)
+    return response.json()
+
+
+def update_gist(token, gist_id, files, description, api=None):
+    '''
+    Update a gist.
+    'files' shoud be a dictionary object, in the following format.
+    files = {
+        'file1.txt': {
+            'content': 'updated file contents'
+        },
+        'old_name.txt': {
+            'filename': 'new_name.txt',
+            'content': 'modified contents'
+        },
+        'new_file.txt": {
+            'content': 'a new file'
+        },
+        'delete_this_file.txt': None
+    }
+    '''
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
+    if token is not None:
+        GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+
+    payload = json.dumps({
+        'description': description,
+        'files': files
+    })
+    url = '/'.join([url, 'gists', gist_id])
+    response = requests.patch(url, data=payload, headers=GIST_HEADER)
     return response.json()
