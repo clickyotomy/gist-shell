@@ -27,7 +27,10 @@ def check_page_limit(response):
     Check how many pages are available in the Gist listing.
     '''
     headers = response.headers
-    page_metadata = headers['Link'].split(', ')
+    if 'Link' in headers:
+        page_metadata = headers['Link'].split(', ')
+    else:
+        return None
 
     for page in page_metadata:
         if re.search(r'rel\=\"last\"', page):
