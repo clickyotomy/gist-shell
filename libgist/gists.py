@@ -9,6 +9,8 @@ Common arguments to all fucnctions:
 
 import re
 import json
+from datetime import datetime
+
 import requests
 
 # For testing only.
@@ -43,15 +45,15 @@ def check_page_limit(response):
             return int(limit.groups()[0]) if limit is not None else limit
 
 
-def list_gists(token=None, user=None, **kwargs):
+def list_gist(token=None, user=None, **kwargs):
     '''
-    List gists. If 'user' is specified, lists public gists for that user.
+    List Gists. If 'user' is specified, lists public gists for that user.
     If authenticated (by passing the access token), it returns the public
-    gists of that user.
+    Gists of that user.
     per_page: Number of results per page.
     page_limit: Fetch results upto this page.
     since: Timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
-    starred: Return starred gists of the authenticated user.
+    starred: Return starred Gists of the authenticated user.
              An empty list will both username and token is passed.
     '''
     pages = []
@@ -112,6 +114,9 @@ def list_gists(token=None, user=None, **kwargs):
 
 
 def get_gist(token, gist_id, revison=None, api=None):
+    '''
+    Get a Gist (a particular version if it) based on it's ID.
+    '''
     url = GITHUB_API_URL if api is None else api.rstrip('/')
     if token is not None:
         GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
@@ -125,4 +130,30 @@ def get_gist(token, gist_id, revison=None, api=None):
         url = '/'.join([url, revison])
 
     response = requests.get(url, headers=GIST_HEADER)
+    return response.json()
+
+
+def post_gist(token, files, description=None, public=False, api=None):
+    '''
+    Post a Gist.
+    'files' should be a dictionary object.
+    files = {
+        'filename': {
+            'content': 'foo'
+        }
+        ...,
+        ...,
+    }
+    '''
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
+    if token is not None:
+        GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+
+    payload = json.dumps({
+        'description': description,
+        'public': public,
+        'files': files
+    })
+
+    response = requests.post(url, data=payload, headers=GIST_HEADER)
     return response.json()
