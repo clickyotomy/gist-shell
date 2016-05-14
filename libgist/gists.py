@@ -267,7 +267,6 @@ def fork_gist(token, gist_id, api=None):
         GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
 
     url = '/'.join([url, 'gists', gist_id, 'forks'])
-    print(url)
     response = requests.post(url, headers=GIST_HEADER)
     return response.json()
 
@@ -308,3 +307,21 @@ def list_forks(token, gist_id, **kwargs):
         current += 1
 
     return forks
+
+
+def delete_gist(token, gist_id, api=None):
+    '''
+    Delete a gist.
+    '''
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
+
+    if token is not None:
+        GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+
+    url = '/'.join([url, 'gists', gist_id])
+    response = requests.delete(url, headers=GIST_HEADER)
+
+    if response.status_code == 204:
+        return True
+
+    return False
