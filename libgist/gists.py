@@ -9,7 +9,6 @@ Common arguments to all fucnctions:
 
 import re
 import json
-from datetime import datetime
 
 import requests
 
@@ -28,21 +27,29 @@ GIST_HEADER = {
 }
 
 
+def parse_link_header(page, expression):
+    '''
+    Helper method for check_page_limit.
+    '''
+    if re.search(r'rel\=\"{0}\"'.format(expression), page):
+        link = page.split(';')[0].strip()
+        limit = re.search(r'\&page=(?P<limit>\d+)\>', link)
+        return int(limit.groups()[0]) if limit is not None else limit
+
+
 def check_page_limit(response):
     '''
     Check how many pages are available in the Gist listing.
     '''
     headers = response.headers
+
     if 'Link' in headers:
         page_metadata = headers['Link'].split(', ')
     else:
         return None
 
     for page in page_metadata:
-        if re.search(r'rel\=\"last\"', page):
-            link = page.split(';')[0].strip()
-            limit = re.search(r'\&page=(?P<limit>\d+)\>', link)
-            return int(limit.groups()[0]) if limit is not None else limit
+        return parse_link_header(page, 'next')
 
 
 def list_gist(token=None, user=None, **kwargs):
@@ -90,7 +97,6 @@ def list_gist(token=None, user=None, **kwargs):
             return []
 
     current = 1
-    check_flag = False
 
     while current <= page_limit:
         params.update({'page': current})
@@ -100,14 +106,9 @@ def list_gist(token=None, user=None, **kwargs):
         else:
             return []
 
-        if check_flag is False:
-            limit = check_page_limit(response)
-            if limit is not None:
-                if page_limit > limit:
-                    page_limit = limit
-            else:
-                page_limit = 2
-            check_flag = True
+        limit = check_page_limit(response)
+        if limit is None:
+            break
         current += 1
 
     return pages
@@ -118,6 +119,7 @@ def get_gist(token, gist_id, revison=None, api=None):
     Get a Gist (a particular version if it) based on it's ID.
     '''
     url = GITHUB_API_URL if api is None else api.rstrip('/')
+
     if token is not None:
         GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
 
@@ -146,6 +148,7 @@ def post_gist(token, files, description=None, public=False, api=None):
     }
     '''
     url = GITHUB_API_URL if api is None else api.rstrip('/')
+
     if token is not None:
         GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
 
@@ -178,6 +181,7 @@ def update_gist(token, gist_id, files, description, api=None):
     }
     '''
     url = GITHUB_API_URL if api is None else api.rstrip('/')
+
     if token is not None:
         GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
 
@@ -188,3 +192,41 @@ def update_gist(token, gist_id, files, description, api=None):
     url = '/'.join([url, 'gists', gist_id])
     response = requests.patch(url, data=payload, headers=GIST_HEADER)
     return response.json()
+
+
+def list_commits(token, gist_id, **kwargs):
+    '''
+    Return a list of the Gist commits.
+    '''
+    api = kwargs['api'] if 'api' in kwargs else None
+    per_page = kwargs['per_page'] if 'per_page' in kwargs else 100
+    page_limit = kwargs['page_limit'] if 'page_limit' in kwargs else 2
+
+    commits = list()
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
+
+    if token is not None:
+        GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+
+    url = '/'.join([url, 'gists', gist_id, 'commits'])
+    current = 1
+    params = {
+        'per_page': per_page,
+    }
+
+    while current <= page_limit:
+        params.update({'page': current})
+        response = requests.get(url, headers=GIST_HEADER, params=params)
+        if response.status_code == 200:
+            commits.extend(response.json())
+        else:
+            return []
+
+        limit = check_page_limit(response)
+
+        if limit is None:
+            break
+
+        current += 1
+
+    return commits

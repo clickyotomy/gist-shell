@@ -81,6 +81,7 @@ def get_authorization(auth, auth_ids=None, otp=None, api=None):
     List specific authorization(s) if the 'auth_ids' argument is passed.
     '''
     authorizations = list()
+
     if auth_ids is None or len(auth_ids) <= 0:
         response = github_auth_request(http='get', uri=None, auth=auth,
                                        payload='{}', otp=otp, api=api)
