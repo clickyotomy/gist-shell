@@ -230,3 +230,26 @@ def list_commits(token, gist_id, **kwargs):
         current += 1
 
     return commits
+
+
+def star_gist(token, gist_id, flag=True, api=None):
+    '''
+    Star (or un-star) a Gist on GitHub.
+    flag: True - star, False - un-star.
+    '''
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
+
+    GIST_HEADER.update({'Content-Length': 0})
+    if token is not None:
+        GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+
+    url = '/'.join([url, 'gists', gist_id, 'star'])
+
+    if flag:
+        response = requests.put(url, headers=GIST_HEADER)
+    else:
+        response = requests.delete(url, headers=GIST_HEADER)
+
+    print(response)
+    if response.status_code == 204:
+        return True
