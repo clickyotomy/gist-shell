@@ -235,7 +235,7 @@ def list_commits(token, gist_id, **kwargs):
 def star_gist(token, gist_id, flag=None, api=None):
     '''
     Star (or un-star) a Gist on GitHub.
-    flag: True - star, False - un-star.
+    flag: True - star, False - un-star, None - get 'star' status.
     '''
     url = GITHUB_API_URL if api is None else api.rstrip('/')
 
@@ -255,3 +255,56 @@ def star_gist(token, gist_id, flag=None, api=None):
             return True
         else:
             return False
+
+
+def fork_gist(token, gist_id, api=None):
+    '''
+    Fork a Gist.
+    '''
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
+
+    if token is not None:
+        GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+
+    url = '/'.join([url, 'gists', gist_id, 'forks'])
+    print(url)
+    response = requests.post(url, headers=GIST_HEADER)
+    return response.json()
+
+
+def list_forks(token, gist_id, **kwargs):
+    '''
+    Return a list of the Gist forks.
+    '''
+    api = kwargs['api'] if 'api' in kwargs else None
+    per_page = kwargs['per_page'] if 'per_page' in kwargs else 100
+    page_limit = kwargs['page_limit'] if 'page_limit' in kwargs else 2
+
+    forks = list()
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
+
+    if token is not None:
+        GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
+
+    url = '/'.join([url, 'gists', gist_id, 'forks'])
+    current = 1
+    params = {
+        'per_page': per_page,
+    }
+
+    while current <= page_limit:
+        params.update({'page': current})
+        response = requests.get(url, headers=GIST_HEADER, params=params)
+        if response.status_code == 200:
+            forks.extend(response.json())
+        else:
+            return []
+
+        limit = check_page_limit(response)
+
+        if limit is None:
+            break
+
+        current += 1
+
+    return forks
