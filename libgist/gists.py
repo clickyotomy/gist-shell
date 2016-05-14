@@ -232,7 +232,7 @@ def list_commits(token, gist_id, **kwargs):
     return commits
 
 
-def star_gist(token, gist_id, flag=True, api=None):
+def star_gist(token, gist_id, flag=None, api=None):
     '''
     Star (or un-star) a Gist on GitHub.
     flag: True - star, False - un-star.
@@ -245,11 +245,13 @@ def star_gist(token, gist_id, flag=True, api=None):
 
     url = '/'.join([url, 'gists', gist_id, 'star'])
 
-    if flag:
+    if flag is True:
         response = requests.put(url, headers=GIST_HEADER)
-    else:
+    elif flag is False:
         response = requests.delete(url, headers=GIST_HEADER)
-
-    print(response)
-    if response.status_code == 204:
-        return True
+    else:
+        response = requests.get(url, headers=GIST_HEADER)
+        if response.status_code == 204:
+            return True
+        else:
+            return False
