@@ -23,8 +23,8 @@ GITHUB_API_URL = 'https://api.github.com'
 
 # Common headers.
 GIST_HEADER = {
-    'Accept': ('application/vnd.github.VERSION.raw+json,'
-               'application/vnd.github.VERSION.base64+json'),
+    'Accept': ('application/vnd.github.v3.raw+json,'
+               'application/vnd.github.v3.base64+json'),
 }
 
 
