@@ -72,7 +72,8 @@ def create_authorization(auth, otp=None, api=None):
     response = github_auth_request(http='post', uri=None, auth=auth,
                                    payload=payload, otp=otp, api=api)
 
-    return response.json()
+    status = True if response.status_code == 201 else False
+    return (status, response.json())
 
 
 def get_authorization(auth, auth_ids=None, otp=None, api=None):
@@ -111,7 +112,15 @@ def delete_authorization(auth, auth_ids=None, otp=None, api=None):
     authorizations = get_authorization(auth=auth, auth_ids=auth_ids, otp=otp,
                                        api=api)
 
+    delete_count = 0
     for authorization in authorizations:
         auth_id = str(authorization['id'])
-        github_auth_request(http='delete', uri=auth_id, auth=auth,
-                            payload='{}', otp=otp, api=api)
+        response = github_auth_request(http='delete', uri=auth_id, auth=auth,
+                                       payload='{}', otp=otp, api=api)
+        if response.status_code == 204:
+            delete_count += 1
+
+    if delete_count == len(authorizations):
+        return True
+
+    return False
