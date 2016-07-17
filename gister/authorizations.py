@@ -115,7 +115,7 @@ def get_authorization(auth, auth_ids=None, otp=None, api=None):
             if response.status_code == 200:
                 try:
                     data = response.json()
-                    if str(data['note']) == 'gist-shell':
+                    if re.search('gist-shell', str(data['note'])):
                         authorizations.append(data)
                 except (KeyError, ValueError):
                     return []
