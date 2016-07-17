@@ -5,6 +5,7 @@ Authentication modules for GitHub OAuth2 (not the web flow).
 Create, fetch, delete authorizations; authenticate users.
 '''
 
+import re
 import json
 from time import time
 from hashlib import sha1
@@ -44,7 +45,7 @@ def github_auth_request(http, uri, auth=(), **kwargs):
         'Accept': 'application/vnd.github.damage-preview+json'
     }
 
-    url = api_url if api is not None else api
+    url = api_url if api is not None else api_url
 
     if otp is not None:
         headers.update({'X-GitHub-OTP': otp})
@@ -58,27 +59,39 @@ def github_auth_request(http, uri, auth=(), **kwargs):
     return response
 
 
-def create_authorization(auth, otp=None, api=None):
+def create_authorization(auth, note='', otp=None, api=None):
     '''
     Create a new authorization.
     '''
-    payload = json.dumps({
-        'note': 'gist-shell',
+    payload = {
         'note_url': 'https://github.com/clickyotomy/gist-shell',
         'scopes': ['gist'],
         'fingerprint': generate_fingerprint()
-    })
+    }
+
+    if len(note) > 1:
+        note = re.sub('-', ' ', note.lower()).split(' ')
+        default = ['gist-shell']
+        default.extend(note)
+        payload.update({'note': '-'.join(default)})
+
+    else:
+        payload.update({'note': 'gist-shell'})
 
     response = github_auth_request(http='post', uri=None, auth=auth,
-                                   payload=payload, otp=otp, api=api)
+                                   payload=json.dumps(payload), otp=otp,
+                                   api=api)
 
     status = True if response.status_code == 201 else False
-    return (status, response.json())
+    try:
+        return (status, response.json())
+    except (KeyError, ValueError):
+        return (status, None)
 
 
 def get_authorization(auth, auth_ids=None, otp=None, api=None):
     '''
-    Get all the authorizations created using libgist (note: gist-shell).
+    Get all the authorizations created using gister (note: gist-shell).
     List specific authorization(s) if the 'auth_ids' argument is passed.
     '''
     authorizations = list()
@@ -87,26 +100,31 @@ def get_authorization(auth, auth_ids=None, otp=None, api=None):
         response = github_auth_request(http='get', uri=None, auth=auth,
                                        payload='{}', otp=otp, api=api)
         if response.status_code == 200:
-            data = response.json()
-            for authorization in data:
-                if str(authorization['note']) == 'gist-shell':
-                    authorizations.append(authorization)
-
+            try:
+                data = response.json()
+                for authorization in data:
+                    if str(authorization['note']) == 'gist-shell':
+                        authorizations.append(authorization)
+            except (KeyError, ValueError):
+                return []
     else:
         for auth_id in auth_ids:
             response = github_auth_request(http='get', uri=auth_id, auth=auth,
                                            payload='{}', otp=otp, api=api)
 
             if response.status_code == 200:
-                data = response.json()
-                if str(data['note']) == 'gist-shell':
-                    authorizations.append(data)
+                try:
+                    data = response.json()
+                    if str(data['note']) == 'gist-shell':
+                        authorizations.append(data)
+                except (KeyError, ValueError):
+                    return []
     return authorizations
 
 
 def delete_authorization(auth, auth_ids=None, otp=None, api=None):
     '''
-    Delete all the authorizations created using libgist (note: gist-shell).
+    Delete all the authorizations created using gister (note: gist-shell).
     Delete specific authorization(s) if the 'auth_ids' argument is passed.
     '''
     authorizations = get_authorization(auth=auth, auth_ids=auth_ids, otp=otp,

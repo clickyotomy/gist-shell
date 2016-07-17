@@ -63,3 +63,6 @@ target/
 
 # Sensitive stuff.
 vault/
+
+# For tracking features.
+feature-tracker

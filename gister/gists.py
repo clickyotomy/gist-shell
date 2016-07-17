@@ -12,12 +12,6 @@ import json
 
 import requests
 
-# For testing only.
-VAULT = json.loads(open('vault/login.json', 'r').read())
-LOGIN = (VAULT['username'], VAULT['password'])
-GH_TOKEN = VAULT['gh_token']
-GHE_TOKEN = VAULT['ghe_token']
-
 # Default API URL.
 GITHUB_API_URL = 'https://api.github.com'
 
@@ -72,12 +66,8 @@ def list_gist(token=None, user=None, **kwargs):
     page_limit = kwargs['page_limit'] if 'page_limit' in kwargs else 2
 
     url = GITHUB_API_URL if api is None else api.rstrip('/')
-    params = {
-        'per_page': per_page,
-    }
-
-    if since is not None:
-        params.update({'since': since})
+    params = {'per_page': per_page, 'since': since} \
+        if since is not None else {'per_page': per_page}
 
     if token is not None:
         GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
@@ -103,7 +93,10 @@ def list_gist(token=None, user=None, **kwargs):
         params.update({'page': current})
         response = requests.get(url, headers=GIST_HEADER, params=params)
         if response.status_code == 200:
-            pages.extend(response.json())
+            try:
+                pages.extend(response.json())
+            except (KeyError, ValueError):
+                return []
         else:
             return []
 
@@ -133,7 +126,10 @@ def get_gist(token, gist_id, revison=None, api=None):
         url = '/'.join([url, revison])
 
     response = requests.get(url, headers=GIST_HEADER)
-    return response.json()
+    try:
+        return response.json()
+    except (KeyError, ValueError):
+        return {}
 
 
 def post_gist(token, files, description=None, public=False, api=None):
@@ -160,7 +156,10 @@ def post_gist(token, files, description=None, public=False, api=None):
     })
     url = '/'.join([url, 'gists'])
     response = requests.post(url, data=payload, headers=GIST_HEADER)
-    return response.json()
+    try:
+        return response.json()
+    except (KeyError, ValueError):
+        return {}
 
 
 def update_gist(token, gist_id, files, description, api=None):
@@ -192,7 +191,10 @@ def update_gist(token, gist_id, files, description, api=None):
     })
     url = '/'.join([url, 'gists', gist_id])
     response = requests.patch(url, data=payload, headers=GIST_HEADER)
-    return response.json()
+    try:
+        return response.json()
+    except (KeyError, ValueError):
+        return {}
 
 
 def list_commits(token, gist_id, **kwargs):
@@ -219,7 +221,10 @@ def list_commits(token, gist_id, **kwargs):
         params.update({'page': current})
         response = requests.get(url, headers=GIST_HEADER, params=params)
         if response.status_code == 200:
-            commits.extend(response.json())
+            try:
+                commits.extend(response.json())
+            except (KeyError, ValueError):
+                return []
         else:
             return []
 
@@ -252,10 +257,7 @@ def star_gist(token, gist_id, flag=None, api=None):
         response = requests.delete(url, headers=GIST_HEADER)
     else:
         response = requests.get(url, headers=GIST_HEADER)
-        if response.status_code == 204:
-            return True
-        else:
-            return False
+        return True if response.status_code == 204 else False
 
 
 def fork_gist(token, gist_id, api=None):
@@ -269,7 +271,10 @@ def fork_gist(token, gist_id, api=None):
 
     url = '/'.join([url, 'gists', gist_id, 'forks'])
     response = requests.post(url, headers=GIST_HEADER)
-    return response.json()
+    try:
+        return response.json()
+    except (KeyError, ValueError):
+        return {}
 
 
 def list_forks(token, gist_id, **kwargs):
@@ -296,7 +301,10 @@ def list_forks(token, gist_id, **kwargs):
         params.update({'page': current})
         response = requests.get(url, headers=GIST_HEADER, params=params)
         if response.status_code == 200:
-            forks.extend(response.json())
+            try:
+                forks.extend(response.json())
+            except (KeyError, ValueError):
+                return []
         else:
             return []
 
