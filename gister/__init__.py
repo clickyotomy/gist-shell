@@ -1,8 +1,8 @@
 #! /usr/bin/env python2.7
 
 '''
-Library for Gist operations.
-gists: CRUD Gists on GitHub.
+Library for doing stuff for GitHub Gists.
+gists: CRUD operationsGists on GitHub.
 authorizations: Handle authorization and authentication stuff.
 '''
 
