@@ -30,11 +30,11 @@ DEAFULT_CREDENTIALS_PATH = '/'.join([os.path.expanduser('~'),
 def fetch_credentials(path=DEAFULT_CREDENTIALS_PATH, fetch=None):
     '''
     Fetch the credentials from the vault.
-    When 'fetch' is None, it loads the default set of credentials.
 
     Caveats:
-        1. If a duplicate default exists, return the first one.
-        2. If fetch is not set to None and the key doesn't exist,
+        1. When 'fetch' is None, it loads the default set of credentials.
+        2. If a duplicate default exists, return the first one.
+        3. If fetch is not set to None and the key doesn't exist,
            the function will return None.
     '''
     if os.path.exists(path):
@@ -100,7 +100,7 @@ def update_credentials(data, name, path=DEAFULT_CREDENTIALS_PATH, force=False):
 def login(path=DEAFULT_CREDENTIALS_PATH, api=None, default=False):
     '''
     Create an authorization (access token) on GitHub.
-    Works with HTTP Basic Authentication [RFC-2617].
+    Works with HTTP Basic Authentication (RFC-2617).
 
     Caveats:
         1. For username, hit return to user the login username.
