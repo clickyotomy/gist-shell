@@ -91,7 +91,7 @@ def create_authorization(auth, note='', otp=None, api=None):
 
 def get_authorization(auth, auth_ids=None, otp=None, api=None):
     '''
-    Get all the authorizations created using gister (note: gist-shell).
+    Get all the authorizations created using gist-shell (note: gist-shell).
     List specific authorization(s) if the 'auth_ids' argument is passed.
     '''
     authorizations = list()
@@ -124,7 +124,7 @@ def get_authorization(auth, auth_ids=None, otp=None, api=None):
 
 def delete_authorization(auth, auth_ids=None, otp=None, api=None):
     '''
-    Delete all the authorizations created using gister (note: gist-shell).
+    Delete all the authorizations created using gist-shell (note: gist-shell).
     Delete specific authorization(s) if the 'auth_ids' argument is passed.
     '''
     authorizations = get_authorization(auth=auth, auth_ids=auth_ids, otp=otp,

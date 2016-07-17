@@ -1,13 +1,14 @@
 #! /usr/bin/env python2.7
 
 '''
-gister.py: A simple command line interface for creating, fetching, browsing,
+gist.py: A simple command line interface for creating, fetching, browsing,
            updating and deleting Gists on GitHub.
 '''
 
 import os
 import sys
 import json
+import socket
 import getpass
 
 # Try importing the library during development.
@@ -25,6 +26,26 @@ from gister import (authorizations, gists)
 # Default path to store credentials locally.
 DEAFULT_CREDENTIALS_PATH = '/'.join([os.path.expanduser('~'),
                                      '.gist-shell', 'vault.json'])
+
+
+# For colorama.
+# from colorama import init, Fore, Back, Style
+# init(autoreset=True)
+
+
+def get_external_ip_addr():
+    '''
+    Get the external IP address of the host.
+    '''
+    try:
+        _sockets = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        _sockets.connect(("github.com", 80))
+        _socket_name = _sockets.getsockname()[0]
+        _sockets.close()
+    except socket.error:
+        # Fallback option.
+        return socket.getfqdn()
+    return _socket_name
 
 
 def fetch_credentials(path=DEAFULT_CREDENTIALS_PATH, fetch=None):
@@ -99,7 +120,7 @@ def update_credentials(data, name, path=DEAFULT_CREDENTIALS_PATH, force=False):
 
 def login(path=DEAFULT_CREDENTIALS_PATH, api=None, default=False):
     '''
-    Create an authorization (access token) on GitHub.
+    Create an authorization (access token; scope: 'gist') on GitHub.
     Works with HTTP Basic Authentication (RFC-2617).
 
     Caveats:
@@ -126,6 +147,7 @@ def login(path=DEAFULT_CREDENTIALS_PATH, api=None, default=False):
                 'credentials': {
                     'id': data['id'],
                     'token': data['token'],
+                    'username': username,
                     'created-at': data['created_at'],
                 },
                 'default': default
@@ -136,3 +158,16 @@ def login(path=DEAFULT_CREDENTIALS_PATH, api=None, default=False):
 
         return True
     return False
+
+
+# def upload(payload, token, description=None, public=False):
+#     '''
+#     Upload the payload to GitHub.
+#
+#     Caveats:
+#         1. The Gists are private by default.
+#         2. If no description is provided, a default string with the
+#            login username, hostname, IP adderss and time (in UTC) will
+#            be provided.
+#     '''
+#     pass

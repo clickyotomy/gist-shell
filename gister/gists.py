@@ -9,6 +9,9 @@ Common arguments to all fucnctions:
 
 import re
 import json
+from socket import getfqdn
+from getpass import getuser
+from datetime import datetime
 
 import requests
 
@@ -149,6 +152,11 @@ def post_gist(token, files, description=None, public=False, api=None):
     if token is not None:
         GIST_HEADER.update({'Authorization': ' '.join(['token', token])})
 
+    if description is None:
+        now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        description = ('Created using gist-shell from {host} by {user} '
+                       'at {time} UTC.').format(host=getfqdn(), user=getuser(),
+                                                time=now)
     payload = json.dumps({
         'description': description,
         'public': public,
