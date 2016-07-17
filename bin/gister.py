@@ -2,7 +2,7 @@
 
 '''
 gister.py: A simple command line interface for creating, fetching, browsing,
-           updating and deleting gists on GitHub.
+           updating and deleting Gists on GitHub.
 '''
 
 import os
