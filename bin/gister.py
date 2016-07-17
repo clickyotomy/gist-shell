@@ -22,6 +22,7 @@ except ImportError:
 from gister import (authorizations, gists)
 
 
+# Default path to store credentials locally.
 DEAFULT_CREDENTIALS_PATH = '/'.join([os.path.expanduser('~'),
                                      '.gist-shell', 'vault.json'])
 
