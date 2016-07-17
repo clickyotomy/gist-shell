@@ -103,7 +103,7 @@ def get_authorization(auth, auth_ids=None, otp=None, api=None):
             try:
                 data = response.json()
                 for authorization in data:
-                    if str(authorization['note']) == 'gist-shell':
+                    if re.search('gist-shell', str(data['note'])):
                         authorizations.append(authorization)
             except (KeyError, ValueError):
                 return []
