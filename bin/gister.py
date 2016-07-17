@@ -104,7 +104,7 @@ def login(path=DEAFULT_CREDENTIALS_PATH, api=None, default=False):
 
     Caveats:
         1. For username, hit return to user the login username.
-        2. For github-2fa-auth, host return to skip.
+        2. For github-2fa-auth, hit return to skip.
         3. 'gist-shell' will appended to auth-token-note for storing
            the description for the Personal Access Token.
     '''
