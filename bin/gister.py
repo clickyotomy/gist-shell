@@ -1,8 +1,8 @@
 #! /usr/bin/env python2.7
 
 '''
-gist.py: A simple command line interface for creating, fetching, browsing,
-         updating and deleting gists on GitHub.
+gister.py: A simple command line interface for creating, fetching, browsing,
+           updating and deleting gists on GitHub.
 '''
 
 import os
