@@ -61,8 +61,8 @@ def update_credentials(data, name, path=DEAFULT_CREDENTIALS_PATH, force=False):
         2. If the vault has a malformed JSON, the function will exit,
            returning None, if force is set to True, it will overwrite the
            vault with the new credentials.
-        3. If the vault file has incorrect permissions (not writebale),
-           the function will exit with by returning None.
+        3. If the vault file has incorrect file permissions, the function
+           will exit with by returning None.
         4. If a duplicate credential exists, the function will return a None;
            if force is set to True, it will update the existing credential.
     '''
