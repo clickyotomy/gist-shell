@@ -160,14 +160,14 @@ def login(path=DEAFULT_CREDENTIALS_PATH, api=None, default=False):
     return False
 
 
-# def upload(payload, token, description=None, public=False):
-#     '''
-#     Upload the payload to GitHub.
-#
-#     Caveats:
-#         1. The Gists are private by default.
-#         2. If no description is provided, a default string with the
-#            login username, hostname, IP adderss and time (in UTC) will
-#            be provided.
-#     '''
-#     pass
+def upload(payload, token, description=None, public=False):
+    '''
+    Upload the payload to GitHub.
+
+    Caveats:
+        1. The Gists are private by default.
+        2. If no description is provided, a default string with the
+           login username, hostname, IP adderss and time (in UTC) will
+           be provided.
+    '''
+    pass

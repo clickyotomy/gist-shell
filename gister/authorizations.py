@@ -65,7 +65,7 @@ def create_authorization(auth, note='', otp=None, api=None):
     '''
     payload = {
         'note_url': 'https://github.com/clickyotomy/gist-shell',
-        'scopes': ['gist'],
+        'scopes': ['gist', 'user:email'],
         'fingerprint': generate_fingerprint()
     }
 
@@ -103,7 +103,7 @@ def get_authorization(auth, auth_ids=None, otp=None, api=None):
             try:
                 data = response.json()
                 for authorization in data:
-                    if re.search('gist-shell', str(data['note'])):
+                    if re.search('.*gist-shell.*', str(authorization['note'])):
                         authorizations.append(authorization)
             except (KeyError, ValueError):
                 return []

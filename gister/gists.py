@@ -342,3 +342,41 @@ def delete_gist(token, gist_id, api=None):
         return True
 
     return False
+
+
+def get_email_addr(token, **kwargs):
+    '''
+    Get the email address of the user.
+    '''
+    api = kwargs['api'] if 'api' in kwargs else None
+    per_page = kwargs['per_page'] if 'per_page' in kwargs else 100
+    page_limit = kwargs['page_limit'] if 'page_limit' in kwargs else 2
+
+    url = GITHUB_API_URL if api is None else api.rstrip('/')
+    url = '/'.join([url, 'user', 'emails'])
+    headers = {
+        'Accept': 'application/vnd.github.v3.json',
+        'Authorization': ' '.join(['token', token])
+    }
+    params = {'per_page': per_page}
+
+    current = 1
+    while current <= page_limit:
+        params.update({'page': current})
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code == 200:
+            try:
+                for email in response.json():
+                    if email['primary']:
+                        return email['email']
+            except (KeyError, ValueError):
+                return None
+        else:
+            return None
+
+        limit = check_page_limit(response)
+        if limit is None:
+            break
+        current += 1
+
+    return None
