@@ -7,11 +7,15 @@ Common arguments to all fucnctions:
     2. api: API URL for the endpoint, other than GitHub.
 '''
 
+import os
 import re
 import json
+import shutil
+import distutils.spawn
 from socket import getfqdn
 from getpass import getuser
 from datetime import datetime
+from subprocess import Popen, PIPE
 
 import requests
 
@@ -380,3 +384,82 @@ def get_email_addr(token, **kwargs):
         current += 1
 
     return None
+
+
+def post_gist_non_text(token, files, description=None, public=False, api=None):
+    '''
+    Same as post_gistl but for files which are not plain-text.
+    '''
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    stub_name = '.gist-shell-stub-{0}'.format(datetime.utcnow().strftime('%s'))
+    stub = ('Created using gist-shell from {host} by {user} '
+            'at {time} UTC.').format(host=getfqdn(), user=getuser(), time=now)
+    stub_payload = {
+        stub_name: {
+            'content': stub
+        }
+    }
+    current_dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    new_gist = post_gist(token, stub_payload, description, public, api)
+
+    try:
+        gist_id, pull_url, push_url = new_gist['id'], \
+            new_gist['git_pull_url'], new_gist['git_push_url']
+
+        git = distutils.spawn.find_executable('git')
+        if git is None:
+            raise ValueError
+
+        addr = get_email_addr(token)
+        if addr is not None:
+            email = ['user.email', addr]
+        else:
+            email = ['user.name', getuser()]
+
+        # Set of git commands.
+        gist_dir_path = '/tmp/{0}'.format(gist_id)
+        copy_files = ['cp'] + [_['path'] for _ in files.values()] + \
+            [gist_dir_path]
+        git_clone = [git, 'clone', pull_url, gist_dir_path]
+        git_config = [git, 'config', '--local'] + email
+        git_add = [git, 'add', '.']
+        git_rm = [git, 'rm', stub_name]
+        git_commit = [git, 'commit', '-m', 'From gist-shell']
+        protocol, uri = push_url.split('://')
+        git_push = [git, 'push', '{0}://{1}:@{2}'.format(protocol, token, uri)]
+
+        if os.path.exists(gist_dir_path) and os.path.isdir(gist_dir_path):
+            shutil.rmtree(gist_dir_path)
+
+        execute = Popen(git_clone, stdout=PIPE, stderr=PIPE, close_fds=True)
+        execute.communicate()
+
+        os.chdir(gist_dir_path)
+
+        execute = Popen(git_clone, stdout=PIPE, stderr=PIPE, close_fds=True)
+        execute.communicate()
+
+        execute = Popen(git_config, stdout=PIPE, stderr=PIPE, close_fds=True)
+        execute.communicate()
+
+        execute = Popen(copy_files, stdout=PIPE, stderr=PIPE, close_fds=True)
+        execute.communicate()
+
+        execute = Popen(git_add, stdout=PIPE, stderr=PIPE, close_fds=True)
+        execute.communicate()
+
+        execute = Popen(git_rm, stdout=PIPE, stderr=PIPE, close_fds=True)
+        execute.communicate()
+
+        execute = Popen(git_commit, stdout=PIPE, stderr=PIPE, close_fds=True)
+        execute.communicate()
+
+        execute = Popen(git_push, stdout=PIPE, stderr=PIPE, close_fds=True)
+        execute.communicate()
+
+        os.chdir(current_dir_path)
+
+    except (KeyError, ValueError, TypeError):
+        return None
+    return gist_id
