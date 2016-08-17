@@ -405,7 +405,7 @@ def post_gist_non_text(token, files, **kwargs):
             'at {time} UTC.').format(host=getfqdn(), user=getuser(), time=now)
     stub_payload = {
         stub_name: {
-            'content': stub
+            'content': stub + '\n'
         }
     }
 
