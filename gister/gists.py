@@ -386,10 +386,19 @@ def get_email_addr(token, **kwargs):
     return None
 
 
-def post_gist_non_text(token, files, description=None, public=False, api=None):
+def post_gist_non_text(token, files, **kwargs):
     '''
     Same as post_gistl but for files which are not plain-text.
     '''
+
+    api = kwargs['api'] if 'api' in kwargs else None
+    public = kwargs['public'] if 'public' in kwargs else False
+    current_dir_path = kwargs['dir'] if 'dir' in kwargs else None
+    description = kwargs['description'] if 'description' in kwargs else None
+
+    if current_dir_path is None:
+        return
+
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     stub_name = '.gist-shell-stub-{0}'.format(datetime.utcnow().strftime('%s'))
     stub = ('Created using gist-shell from {host} by {user} '
@@ -399,7 +408,6 @@ def post_gist_non_text(token, files, description=None, public=False, api=None):
             'content': stub
         }
     }
-    current_dir_path = os.path.dirname(os.path.realpath(__file__))
 
     new_gist = post_gist(token, stub_payload, description, public, api)
 
