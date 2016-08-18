@@ -393,6 +393,7 @@ def post_gist_non_text(token, files, **kwargs):
 
     api = kwargs['api'] if 'api' in kwargs else None
     public = kwargs['public'] if 'public' in kwargs else False
+    update = kwargs['update'] if 'update' in kwargs else False
     current_dir_path = kwargs['dir'] if 'dir' in kwargs else None
     description = kwargs['description'] if 'description' in kwargs else None
 
@@ -439,6 +440,9 @@ def post_gist_non_text(token, files, **kwargs):
 
         if os.path.exists(gist_dir_path) and os.path.isdir(gist_dir_path):
             shutil.rmtree(gist_dir_path)
+
+        if update:
+            git_rm.append([_ for _ in files if files[_]['delete']])
 
         execute = Popen(git_clone, stdout=PIPE, stderr=PIPE, close_fds=True)
         execute.communicate()
