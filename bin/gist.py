@@ -160,7 +160,7 @@ def login(path=DEAFULT_CREDENTIALS_PATH, api=None, default=False):
     return False
 
 
-def upload(payload, token, description=None, public=False):
+def upload(payload, token, description=None, public=False, update=False):
     '''
     Upload the payload to GitHub.
 

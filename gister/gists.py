@@ -386,9 +386,9 @@ def get_email_addr(token, **kwargs):
     return None
 
 
-def post_gist_non_text(token, files, **kwargs):
+def post_gist_git(token, files, **kwargs):
     '''
-    Same as post_gistl but for files which are not plain-text.
+    Same as post_gist but for files which are not plain-text or truncated.
     '''
 
     api = kwargs['api'] if 'api' in kwargs else None
@@ -475,3 +475,34 @@ def post_gist_non_text(token, files, **kwargs):
     except (KeyError, ValueError, TypeError):
         return None
     return gist_id
+
+
+def get_gist_git(gist, pull_url, dest_dir_path, current_dir_path, files=None):
+    '''
+    Download the content of the gist (when you have large/many files).
+    '''
+    git = distutils.spawn.find_executable('git')
+    gist_dir_path = '/tmp/{0}'.format(gist)
+    git_clone = [git, 'clone', pull_url, gist_dir_path]
+
+    ignore = [r'^(\.gist-shell-stub-)\d{10}$', '.git']
+    all_files = [_file for item in files for _file in os.listdir('.')
+                 if re.search(item, _file)]
+    copy_files = [_file for item in ignore for _file in all_files
+                  if not re.search(item, _file)]
+
+    copy = ['cp', '-r'] + copy_files + [dest_dir_path]
+
+    if os.path.exists(gist_dir_path) and os.path.isdir(gist_dir_path):
+        shutil.rmtree(gist_dir_path)
+
+    dest_dir_path = current_dir_path if dest_dir_path is None \
+        else dest_dir_path
+
+    execute = Popen(git_clone, stdout=PIPE, stderr=PIPE, close_fds=True)
+    execute.communicate()
+
+    os.chdir(gist_dir_path)
+
+    execute = Popen(copy, stdout=PIPE, stderr=PIPE, close_fds=True)
+    execute.communicate()
