@@ -472,6 +472,8 @@ def post_gist_git(token, files, **kwargs):
 
         os.chdir(current_dir_path)
 
+        shutil.rmtree(gist_dir_path)
+
     except (KeyError, ValueError, TypeError):
         return None
     return gist_id
@@ -485,13 +487,9 @@ def get_gist_git(gist, pull_url, dest_dir_path, current_dir_path, files=None):
     gist_dir_path = '/tmp/{0}'.format(gist)
     git_clone = [git, 'clone', pull_url, gist_dir_path]
 
-    ignore = [r'^(\.gist-shell-stub-)\d{10}$', '.git']
-    all_files = [_file for item in files for _file in os.listdir('.')
-                 if re.search(item, _file)]
-    copy_files = [_file for item in ignore for _file in all_files
-                  if not re.search(item, _file)]
+    files = [r'.*'] if files is None else files
 
-    copy = ['cp', '-r'] + copy_files + [dest_dir_path]
+    ignore = [r'^(\.gist-shell-stub-)\d{10}$', r'^.git$']
 
     if os.path.exists(gist_dir_path) and os.path.isdir(gist_dir_path):
         shutil.rmtree(gist_dir_path)
@@ -502,7 +500,17 @@ def get_gist_git(gist, pull_url, dest_dir_path, current_dir_path, files=None):
     execute = Popen(git_clone, stdout=PIPE, stderr=PIPE, close_fds=True)
     execute.communicate()
 
-    os.chdir(gist_dir_path)
+    all_files = [_file for item in files for _file in os.listdir(gist_dir_path)
+                 if re.search(item, _file)]
+    copy_files = list(set([_file for item in ignore for _file in all_files
+                           if not re.search(item, _file)]))
+
+    copy = ['cp'] + ['/'.join([gist_dir_path, _]) for _ in copy_files] + \
+        [dest_dir_path]
 
     execute = Popen(copy, stdout=PIPE, stderr=PIPE, close_fds=True)
     execute.communicate()
+
+    shutil.rmtree(gist_dir_path)
+
+    return copy_files
