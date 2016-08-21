@@ -11,6 +11,7 @@ import os
 import re
 import json
 import shutil
+import fnmatch
 import distutils.spawn
 from socket import getfqdn
 from getpass import getuser
@@ -501,7 +502,7 @@ def get_gist_git(gist, pull_url, dest_dir_path, current_dir_path, files=None):
     execute.communicate()
 
     all_files = [_file for item in files for _file in os.listdir(gist_dir_path)
-                 if re.search(item, _file)]
+                 if fnmatch.fnmatch(_file, item)]
     copy_files = list(set([_file for item in ignore for _file in all_files
                            if not re.search(item, _file)]))
 
